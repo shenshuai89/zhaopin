@@ -14,9 +14,7 @@ angular.module('app').controller('postCtrl', ['$scope', '$http',function($scope,
         id: 'fail',
         name: '不合适'
     }]
-    $scope.defSelect = {
-
-    }
+    $scope.defSelect = 'all'
 
     $http.get('data/myPost.json').then(function(res){
         $scope.positionList = res.data;
@@ -26,6 +24,7 @@ angular.module('app').controller('postCtrl', ['$scope', '$http',function($scope,
 
     $scope.filterObj = {};
     $scope.tClick = function(id, name) {
+
         switch (id) {
             case 'all':
                 delete $scope.filterObj.state;

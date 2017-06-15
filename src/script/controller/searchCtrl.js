@@ -20,6 +20,7 @@ angular.module('app').controller('searchCtrl', ['dict', '$scope', '$http', funct
     };
     $scope.search();
     $scope.sheet = {};
+    $scope.defSelect = 'city'
 
     var tabId = '';
     $scope.tClick = function(id,name) {
