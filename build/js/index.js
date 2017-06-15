@@ -1,6 +1,6 @@
 'use strict'
 
-angular.module('app', ['ui.router','ngCookies'])
+angular.module('app', ['ui.router','ngCookies','validation'])
 'use strict';
 //定义全局变量
 angular.module('app').value('dict', {}).run(['dict', '$http', function(dict, $http){
@@ -13,6 +13,28 @@ angular.module('app').value('dict', {}).run(['dict', '$http', function(dict, $ht
     $http.get('data/scale.json').then(function(resp){
         dict.scale = resp.data;
     });
+}]);
+
+'use strict';
+angular.module('app').config(['$provide', function($provide){
+    // 装饰器主要用来修改默认服务的功能，给默认的服务增加一些功能
+    $provide.decorator('$http', ['$delegate', '$q', function($delegate, $q){
+        $delegate.post = function(url, data, config) {
+            var def = $q.defer();
+            $delegate.get(url).then(function(resp) {
+                def.resolve(resp.data);
+            },function (err) {
+                def.reject(err);
+            })
+
+            return {
+                then: function(scb, ecb){
+                    def.promise.then(scb, ecb);
+                }
+            }
+        }
+        return $delegate;
+    }]);
 }]);
 
 /**
@@ -36,8 +58,56 @@ angular.module('app').config(['$stateProvider', '$urlRouterProvider', function (
         url:'/search',
         templateUrl:'view/search.html',
         controller:'searchCtrl'
+    }).state('login', {
+        url:'/login',
+        templateUrl:'view/login.html',
+        controller:'loginCtrl'
+    }).state('favorite', {
+        url:'/favorite',
+        templateUrl:'view/favorite.html',
+        controller:'favoriteCtrl'
+    }).state('me', {
+        url:'/me',
+        templateUrl:'view/me.html',
+        controller:'meCtrl'
+    }).state('post', {
+        url:'/post',
+        templateUrl:'view/post.html',
+        controller:'postCtrl'
+    }).state('register', {
+        url:'/register',
+        templateUrl:'view/register.html',
+        controller:'registerCtrl'
     })
     $urlRouterProvider.otherwise('main');
+}])
+'use strict'
+angular.module('app').config(['$validationProvider', function ($validationProvider) {
+    var expression = {
+        phone: /^1[\d]{10}$/,
+        password: function(value) {
+            var str = value + ''
+            return str.length > 5;
+        },
+        required: function(value) {
+            return !!value;
+        }
+    };
+    var defaultMsg = {
+        phone: {
+            success: '',
+            error: '必须是11位手机号'
+        },
+        password: {
+            success: '',
+            error: '长度至少6位'
+        },
+        required: {
+            success: '',
+            error: '不能为空'
+        }
+    };
+    $validationProvider.setExpression(expression).setDefaultMsg(defaultMsg);
 }])
 'use strict'
 angular.module('app').controller('companyCtrl',['$scope', '$http', '$state',function ($scope, $http, $state) {
@@ -56,6 +126,35 @@ angular.module('app').controller('companyCtrl',['$scope', '$http', '$state',func
  * Created by sam on 2017/6/13.
  */
 'use strict';
+angular.module('app').controller('favoriteCtrl', ['$http', '$scope', function($http, $scope){
+
+    $http.get('data/myFavorite.json').then(function(resp) {
+        $scope.list = resp.data;
+    });
+
+}]);
+/**
+ * Created by sam on 2017/6/13.
+ */
+'use strict';
+angular.module('app').controller('loginCtrl', ['$scope','$http','$state', 'cache',function($scope,$http,$state,cache){
+
+    $scope.submit = function() {
+        $http.post('data/login.json', $scope.user).then(function(resp){
+            cache.put('id',resp.id);
+            cache.put('name',resp.name);
+            cache.put('image',resp.image);
+            $state.go('main');
+        },function (err) {
+            console.log(err)
+        });
+    }
+
+}]);
+/**
+ * Created by sam on 2017/6/13.
+ */
+'use strict';
 angular.module('app').controller('mainCtrl', ['$scope', '$http', function($scope, $http){
 
     $http({
@@ -63,6 +162,24 @@ angular.module('app').controller('mainCtrl', ['$scope', '$http', function($scope
     }).then(function (res) {
         $scope.list = res.data
     })
+
+}]);
+/**
+ * Created by sam on 2017/6/13.
+ */
+'use strict';
+angular.module('app').controller('meCtrl', ['$state', 'cache', '$http', '$scope', function($state, cache, $http, $scope){
+
+    if(cache.get('name')) {
+        $scope.name = cache.get('name');
+        $scope.image = cache.get('image');
+    }
+    $scope.logout = function() {
+        cache.remove('id');
+        cache.remove('name');
+        cache.remove('image');
+        $state.go('main');
+    };
 
 }]);
 /**
@@ -112,8 +229,88 @@ angular.module('app').controller('positionCtrl',['$scope', '$http', '$state', '$
 
     })
 }])
+/**
+ * Created by sam on 2017/6/13.
+ */
+'use strict';
+angular.module('app').controller('postCtrl', ['$scope', '$http',function($scope, $http){
+
+    $scope.tabList = [{
+        id: 'all',
+        name: '全部'
+    }, {
+        id: 'pass',
+        name: '面试邀请'
+    }, {
+        id: 'fail',
+        name: '不合适'
+    }]
+    $scope.defSelect = {
+
+    }
+
+    $http.get('data/myPost.json').then(function(res){
+        $scope.positionList = res.data;
+    },function (err) {
+        console.log(err)
+    });
+
+    $scope.filterObj = {};
+    $scope.tClick = function(id, name) {
+        switch (id) {
+            case 'all':
+                delete $scope.filterObj.state;
+                break;
+            case 'pass':
+                $scope.filterObj.state = '1';
+                break;
+            case 'fail':
+                $scope.filterObj.state = '-1';
+                break;
+            default:
+
+        }
+    }
+
+
+}]);
+/**
+ * Created by sam on 2017/6/13.
+ */
+'use strict';
+angular.module('app').controller('registerCtrl', ['$scope', '$http', '$state', '$interval',function($scope, $http, $state, $interval){
+
+    $scope.submit = function() {
+        $http.post('data/regist.json',$scope.user).then(function(resp){
+            $state.go('login');
+        },function (err) {
+            console.log(err)
+        });
+    };
+    var count = 60;
+    $scope.send = function() {
+        $http.get('data/code.json').then(function(resp){
+            if(1===resp.data.state) {
+                count = 60;
+                $scope.time = '60s';
+                var interval = $interval(function() {
+                    if(count<=0) {
+                        $interval.cancel(interval);
+                        $scope.time = '';
+                    } else {
+                        count--;
+                        $scope.time = count + 's';
+                    }
+                }, 1000);
+            }
+        },function (err) {
+            console.log(err)
+        });
+    }
+
+}]);
 'use strict'
-angular.module('app').controller('searchCtrl', ['dict','$scope', '$http', function (dict,$scope, $http) {
+angular.module('app').controller('searchCtrl', ['dict', '$scope', '$http', function (dict,$scope, $http) {
     $scope.name=''
     $scope.tabList = [{
         id: 'city',
@@ -177,24 +374,6 @@ angular.module('app').controller('searchCtrl', ['dict','$scope', '$http', functi
     },function (err) {
         console.log(err)
     })*/
-}])
-'use strict'
-angular.module('app').filter('filterByObj',[function () {
-    return function (list, obj) {
-        var result = []
-        angular.forEach(list, function (item) {
-            var isEqual = true
-            for (var e in obj){
-                if(item[e] !== obj[e]){
-                    isEqual = false
-                }
-            }
-            if (isEqual){
-                result.push(item)
-            }
-        })
-        return result;
-    }
 }])
 'use strict'
 angular.module('app').directive('appCompany', [function () {
@@ -279,14 +458,25 @@ angular.module('app').directive('appPositionInfo', [function () {
     }
 }])
 'use strict'
-angular.module('app').directive('appPositionList', [function () {
+angular.module('app').directive('appPositionList', ['$http',function ($http) {
     return{
         restrict:'A',
         replace:true,
         templateUrl:'view/template/positionList.html',
         scope:{
             data:'=',
-            filterObj:'='
+            filterObj:'=',
+            isFavorite: '='
+        },
+        link:function (scope) {
+            scope.select = function (item) {
+                $http.post('data/favorite.json',{
+                    id:item.id,
+                    select: !item.select
+                }).then(function (res) {
+                    item.select = !item.select
+                })
+            }
         }
     }
 }])
@@ -313,7 +503,8 @@ angular.module('app').directive('appTab',[function () {
         templateUrl:'../../view/template/tab.html',
         scope:{
             list:'=',
-            tabClick:'&'
+            tabClick:'&',
+            defSelect:'='
         },
         link:function (scope) {
             scope.click = function(tab) {
@@ -324,6 +515,24 @@ angular.module('app').directive('appTab',[function () {
     }
 }])
 
+'use strict'
+angular.module('app').filter('filterByObj',[function () {
+    return function (list, obj) {
+        var result = []
+        angular.forEach(list, function (item) {
+            var isEqual = true
+            for (var e in obj){
+                if(item[e] !== obj[e]){
+                    isEqual = false
+                }
+            }
+            if (isEqual){
+                result.push(item)
+            }
+        })
+        return result;
+    }
+}])
 'use strict'
 angular.module('app').service('cache',['$cookies', function ($cookies) {
     this.put = function(key, value){

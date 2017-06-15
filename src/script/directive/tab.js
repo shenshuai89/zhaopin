@@ -7,7 +7,8 @@ angular.module('app').directive('appTab',[function () {
         templateUrl:'../../view/template/tab.html',
         scope:{
             list:'=',
-            tabClick:'&'
+            tabClick:'&',
+            defSelect:'='
         },
         link:function (scope) {
             scope.click = function(tab) {

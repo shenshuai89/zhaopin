@@ -1,5 +1,5 @@
 'use strict'
-angular.module('app').controller('searchCtrl', ['dict','$scope', '$http', function (dict,$scope, $http) {
+angular.module('app').controller('searchCtrl', ['dict', '$scope', '$http', function (dict,$scope, $http) {
     $scope.name=''
     $scope.tabList = [{
         id: 'city',
