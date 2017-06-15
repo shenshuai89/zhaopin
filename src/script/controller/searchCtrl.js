@@ -41,7 +41,7 @@ angular.module('app').controller('searchCtrl', ['dict','$scope', '$http', functi
         } else {
             delete $scope.filterObj[tabId + 'Id'];
             angular.forEach($scope.tabList, function(item){
-                if(item.id===tabId) {
+                if(item.id === tabId) {
                     switch (item.id) {
                         case 'city':
                             item.name = '城市';

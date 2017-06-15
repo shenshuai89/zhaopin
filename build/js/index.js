@@ -155,7 +155,7 @@ angular.module('app').controller('searchCtrl', ['dict','$scope', '$http', functi
         } else {
             delete $scope.filterObj[tabId + 'Id'];
             angular.forEach($scope.tabList, function(item){
-                if(item.id===tabId) {
+                if(item.id === tabId) {
                     switch (item.id) {
                         case 'city':
                             item.name = '城市';
@@ -177,6 +177,24 @@ angular.module('app').controller('searchCtrl', ['dict','$scope', '$http', functi
     },function (err) {
         console.log(err)
     })*/
+}])
+'use strict'
+angular.module('app').filter('filterByObj',[function () {
+    return function (list, obj) {
+        var result = []
+        angular.forEach(list, function (item) {
+            var isEqual = true
+            for (var e in obj){
+                if(item[e] !== obj[e]){
+                    isEqual = false
+                }
+            }
+            if (isEqual){
+                result.push(item)
+            }
+        })
+        return result;
+    }
 }])
 'use strict'
 angular.module('app').directive('appCompany', [function () {
@@ -267,7 +285,8 @@ angular.module('app').directive('appPositionList', [function () {
         replace:true,
         templateUrl:'view/template/positionList.html',
         scope:{
-            data:'='
+            data:'=',
+            filterObj:'='
         }
     }
 }])

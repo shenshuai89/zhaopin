@@ -69,7 +69,7 @@ gulp.task('clean', function () {
 })
 
 //启动一个服务器
-gulp.task('service',['build'], function () {
+gulp.task('serve',['build'], function () {
     $.connect.server({
         root:[app.devPath],
         livereload:true,
