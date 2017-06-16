@@ -15,6 +15,16 @@
 @import "./variable.less";
 @import "./search.less";
 
+.ng-enter{
+  transition:1s linear all;
+  opacity: 0;
+}
+.ng-enter-active{
+  opacity: 1;
+}
+
+
+
 .fs(@px) {
   font-size: unit(@px / 37.5, rem);
 }

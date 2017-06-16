@@ -555,6 +555,13 @@
 .search-list {
   margin-top: 2.13333333rem;
 }
+.ng-enter {
+  transition: 1s linear all;
+  opacity: 0;
+}
+.ng-enter-active {
+  opacity: 1;
+}
 html,
 body {
   width: 100%;

@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "angular-cookies": "^1.6.4",
-    "angular-validation": "^1.4.4"
+    "angular-validation": "^1.4.4",
+    "angular-animate": "^1.6.4"
   }
 }

@@ -14219,7 +14219,7 @@ function $LocationProvider() {
 
     $rootElement.on('click', function(event) {
       var rewriteLinks = html5Mode.rewriteLinks;
-      // TODO(vojta): rewrite link when opening in new tab/window (in legacy browser)
+      // TODO(vojta): rewrite link when opening in new tab.js/window (in legacy browser)
       // currently we open nice url link and redirect then
 
       if (!rewriteLinks || event.ctrlKey || event.metaKey || event.shiftKey || event.which === 2 || event.button === 2) return;

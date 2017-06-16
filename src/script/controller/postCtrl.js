@@ -24,7 +24,6 @@ angular.module('app').controller('postCtrl', ['$scope', '$http',function($scope,
 
     $scope.filterObj = {};
     $scope.tClick = function(id, name) {
-
         switch (id) {
             case 'all':
                 delete $scope.filterObj.state;
